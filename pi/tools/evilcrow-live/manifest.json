@@ -1,0 +1,2 @@
+{"schema": 1, "id": "evilcrow-live", "label": "Evil Crow live", "description": "Latest received-signal summary from the ring buffer",
+ "timeout": 15, "output": "text"}

@@ -14,10 +14,15 @@ pi/                       Pi service, tools, installer, tests
   flipper_tool.py         helper for tool authors
   schema/output-v1.schema.json
   tools/                  sysinfo, wifi, disk, services, service-status, reboot, shutdown,
-                          kismet-{start,stop,status,devices,device,alerts}
+                          kismet-{start,stop,status,devices,device,alerts},
+                          evilcrow-{status,captures,capture,live}
   kismet_client.py        read-only Kismet REST client (localhost only)
   kismet/                 sample kismet_site.conf + kismet.service
   install-kismet.sh       optional Kismet installer
+  evilcrow_serial.py      read-only USB-serial parser + empty write allowlist
+  evilcrow_reader.py      background ring-buffer reader (systemd unit)
+  evilcrow/               udev rule + evilcrow-reader.service
+  install-evilcrow.sh     optional Evil Crow RF V2 installer
   examples/git-pull/      disabled example
 PROTOCOL.md  WRITING_TOOLS.md  HARDWARE_TEST.md
 dist/pi_command_runner.fap   prebuilt (SDK release 1.5.1, API 88.2)
@@ -130,10 +135,56 @@ down, unreachable or rejects the key.
 before building the URL. This keeps schema v1 unchanged (still enum/int only) so no free-form
 string ever crosses the UART or reaches a URL from the Flipper side.
 
+
+## Evil Crow RF V2 (optional, receive / monitor only)
+
+> **Legal:** receive and monitor only. Follow the radio rules that apply where you are.
+> These tools **never transmit, replay, jam, brute-force or send rolling codes**. The Pi
+> write-allowlist for the Crow's USB serial port is empty, and CI asserts that no TX
+> command can be built or sent.
+
+| Tool | Output | What it does |
+|---|---|---|
+| Evil Crow status | kv | `/dev/evilcrow` present?, baud, capture count, reader unit state |
+| Evil Crow captures | list | recent RX captures from the ring buffer; each chains to Evil Crow capture |
+| Evil Crow capture | kv | samples, symbol timing, short bit/sample preview (no raw dumps), age |
+| Evil Crow live | progress → text | latest summary from the ring buffer |
+
+**What the stock firmware actually supports over USB serial** (sources under
+[joelsernamoreno/EvilCrowRF-V2](https://github.com/joelsernamoreno/EvilCrowRF-V2)):
+
+* `firmware/firmware/firmware.ino` (current tip) calls `Serial.begin(38400)` but has **no**
+  `Serial.available` / `Serial.read` command loop. Every RX `Serial.print` in
+  `printReceived()` / `signalanalyse()` is **commented out**; captures go to the SD card
+  (`/logs.txt`) and the Wi-Fi web UI (`/setrx`, `/stoprx`, `/logs`, …) only.
+* `old-firmware/v1.3.3/EvilCrow-RFv2/EvilCrow-RFv2.ino` still printed `Count=…`, timing
+  samples, `Samples/Symbol:`, bit strings and `Rawdata corrected:` to USB serial. Our
+  parser understands that format when it appears.
+* `old-firmware/other/ECRFv2-SDR/` is an **alternate** firmware with a HackRF-style serial
+  command set (`rx_start`, `set_freq`, …). We do **not** speak that protocol, and we still
+  refuse every TX/jam/replay token even if that firmware is flashed.
+
+**Practical options for RX on the Flipper:**
+
+1. Use firmware that still logs RX to serial (e.g. v1.3.x), or a small **receive-only**
+   custom firmware that prints the same `Count=` blocks (not shipped here).
+2. Start RX from the Crow's own web UI over Wi-Fi; the Pi reader will pick up serial logs
+   if/when the firmware emits them.
+3. Do **not** expect `evilcrow-rx-start` / frequency knobs over USB serial on stock tip —
+   those controls are HTTP-only today, so they are not implemented here.
+
+**Install:** after `install.sh`, plug the Crow into the Pi USB OTG port and run
+`sudo ./install-evilcrow.sh`. It installs a udev rule (`/dev/evilcrow` for common ESP32
+USB-UART VID:PIDs: CP210x `10c4:ea60`, CH340 `1a86:7523`, CH9102 `1a86:55d4`), the
+`evilcrow-reader.service` (user `flipper-runner`, group `dialout`, no sudo), and refreshes
+the tools. Override the port with `EVILCROW_PORT=` in `/etc/flipper-runner/evilcrow.env`
+if your bridge isn't matched. The reader writes a bounded ring to
+`/run/flipper-runner/evilcrow-captures.json` (tmpfs, 0600). Selection uses the same
+index-into-cache pattern as the Kismet tools (`idx` 0–19, 5 min TTL).
+
 ## Uninstall
 `sudo ./uninstall.sh` on the Pi (leaves the UART enabled), and delete the .fap.
 
 ## Tests
-`cd pi && python3 -m unittest -v tests.test_service` — 22 tests over a pty pair: handshake,
-discovery, every output type, invalid/oversize output → error view, param bounds, timeout
-process-group kill, cancel, unknown/bad ids, oversize/non-printable frames, confirm enforcement.
+`cd pi && pip install -r requirements-dev.txt && python -m pytest -v tests` — service, Kismet
+and Evil Crow tests (pty + mocked REST + serial allowlist).

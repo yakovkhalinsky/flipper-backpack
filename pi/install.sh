@@ -17,7 +17,8 @@ usermod -aG dialout,video "$USER_"   # serial port; video for vcgencmd
 echo "== code + tools (root-owned, read-only to the service)"
 install -d -o root -g root -m 755 "$PREFIX" "$PREFIX/tools" "$PREFIX/flipper_runner" "$PREFIX/schema"
 install -o root -g root -m 644 flipper_runner/*.py "$PREFIX/flipper_runner/"
-install -o root -g root -m 644 flipper_tool.py kismet_client.py kismet_tools.py "$PREFIX/"
+install -o root -g root -m 644 flipper_tool.py kismet_client.py kismet_tools.py \
+  evilcrow_serial.py evilcrow_tools.py evilcrow_reader.py "$PREFIX/"
 install -o root -g root -m 644 schema/output-v1.schema.json "$PREFIX/schema/"
 for d in tools/*/; do
   id=$(basename "$d")

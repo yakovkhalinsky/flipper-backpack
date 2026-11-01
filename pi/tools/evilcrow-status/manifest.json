@@ -1,0 +1,2 @@
+{"schema": 1, "id": "evilcrow-status", "label": "Evil Crow status", "description": "USB serial presence and capture buffer",
+ "timeout": 10, "output": "kv"}

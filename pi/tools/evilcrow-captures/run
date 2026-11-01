@@ -1,0 +1,5 @@
+#!/usr/bin/python3
+from flipper_tool import emit, params
+import evilcrow_tools
+p = params()
+emit(evilcrow_tools.captures_doc(int(p.get("limit", "10"))))

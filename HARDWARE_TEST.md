@@ -3,10 +3,10 @@
 - [ ] Pi flashed with Raspberry Pi OS (Bookworm or later), booted on the backpack, SSH works.
 - [ ] `sudo ./install.sh` finishes; `sudo visudo -c` OK; reboot once if UART settings changed.
 - [ ] `ls -l /dev/serial0` points at `ttyS0` (Zero 2W mini-UART when Bluetooth is on) or `ttyAMA0`.
-- [ ] `systemctl status flipper-runner` active; `journalctl -u flipper-runner` shows "13 tools".
+- [ ] `systemctl status flipper-runner` active; `journalctl -u flipper-runner` shows "17 tools".
 - [ ] `systemctl status serial-getty@ttyS0` inactive (no login console fighting for the port).
 - [ ] Flipper: Settings → Expansion Modules → **None** (see README), USB-UART bridge app closed.
-- [ ] Flipper: Apps → GPIO → Pi Command Runner opens and lists 13 tools.
+- [ ] Flipper: Apps → GPIO → Pi Command Runner opens and lists 17 tools.
 - [ ] System info shows host, IP, uptime and a real CPU temp (vcgencmd works via `video` group).
 - [ ] Wi-Fi shows the SSID; Disk shows a table; Services → ssh shows a status popup.
 - [ ] Back while a tool is running cancels it (journal: `reason=cancelled`).
@@ -34,3 +34,14 @@ Only on networks you own or are permitted to monitor.
 - [ ] Kismet alerts shows alerts or "No Kismet alerts".
 - [ ] `free -m` / `systemctl status kismet` memory stays under the 340 MB cap after ~15 min.
 - [ ] Kismet stop → confirm → "Kismet stopped".
+
+## Evil Crow RF V2 (optional, receive only)
+Only for signals you are allowed to receive under local radio rules. No transmit/replay.
+- [ ] Crow plugged into the Pi USB OTG port; `lsusb` shows a CP210x/CH340/CH9102 (or similar).
+- [ ] `sudo ./install-evilcrow.sh` completes; `ls -l /dev/evilcrow` exists; user `flipper-runner` is in `dialout`.
+- [ ] `systemctl status evilcrow-reader` active; `journalctl -u evilcrow-reader` has no write attempts.
+- [ ] Flipper: Evil Crow status → Connected `yes` (or `no` if unplugged), Captures count, Reader `active`, Writes "allowlist empty".
+- [ ] With **stock tip** firmware: captures stay empty even while the Crow web UI is in RX — expected (serial RX prints are commented out).
+- [ ] With **v1.3.x** (or other firmware that still prints `Count=` blocks): start RX on the Crow, then Evil Crow captures lists entries; pick one for preview-only detail; Evil Crow live shows the latest summary.
+- [ ] Unplug the Crow → status Connected `no`; replug → comes back without restarting flipper-runner.
+- [ ] Confirm there is **no** Evil Crow TX / replay / jam tool in the Flipper menu.

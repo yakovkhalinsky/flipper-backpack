@@ -1,0 +1,4 @@
+#!/usr/bin/python3
+from flipper_tool import emit
+import evilcrow_tools
+emit(evilcrow_tools.status_doc())

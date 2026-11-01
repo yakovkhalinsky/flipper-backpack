@@ -295,7 +295,8 @@ class TestSchemaAndManifests(unittest.TestCase):
 
     def test_shipped_tools_load(self):
         reg = Registry(os.path.join(PI, "tools"), strict_perms=False)
-        self.assertEqual(sorted(reg.tools), ["disk", "kismet-alerts", "kismet-device", "kismet-devices",
+        self.assertEqual(sorted(reg.tools), ["disk", "evilcrow-capture", "evilcrow-captures", "evilcrow-live", "evilcrow-status",
+                                             "kismet-alerts", "kismet-device", "kismet-devices",
                                              "kismet-start", "kismet-status", "kismet-stop", "reboot",
                                              "service-status", "services", "shutdown", "sysinfo", "wifi"])
         self.assertTrue(reg.get("reboot").confirm and reg.get("shutdown").confirm)
