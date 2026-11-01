@@ -1,0 +1,51 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  pi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - run: pip install -r pi/requirements-dev.txt
+      - run: python -m pytest -v pi/tests
+  flipper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - run: pip install -r flipper/requirements.txt
+      - name: Build (release SDK, zero warnings)
+        working-directory: flipper/command_runner
+        run: |
+          ufbt update --channel=release
+          ufbt 2>&1 | tee build.log
+          test "${PIPESTATUS[0]}" -eq 0
+          if grep -qi "warning:" build.log; then echo "::error::compiler warnings"; exit 1; fi
+      - name: Lint
+        working-directory: flipper/command_runner
+        run: ufbt lint
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pi_command_runner-fap
+          path: flipper/command_runner/dist/*.fap
+          retention-days: 7
+          if-no-files-found: error

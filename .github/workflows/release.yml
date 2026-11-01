@@ -1,0 +1,49 @@
+name: Release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.11"
+      - run: pip install -r pi/requirements-dev.txt -r flipper/requirements.txt
+      - run: python -m pytest -v pi/tests
+      - name: Build
+        working-directory: flipper/command_runner
+        run: |
+          ufbt update --channel=release
+          ufbt 2>&1 | tee build.log
+          test "${PIPESTATUS[0]}" -eq 0
+          if grep -qi "warning:" build.log; then echo "::error::compiler warnings"; exit 1; fi
+          ufbt lint
+      - name: Package
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          SDK=$(python -c 'import json,os;print(json.load(open(os.path.expanduser("~/.ufbt/current/ufbt_state.json")))["version"])')
+          echo "SDK=$SDK"; test -n "$SDK"
+          mkdir -p out
+          cp flipper/command_runner/dist/*.fap "out/pi_command_runner-${TAG}-sdk${SDK}.fap"
+          tar --exclude='__pycache__' --exclude='tests' -czf "out/flipper-runner-pi-${TAG}.tar.gz" pi
+          (cd out && sha256sum * > SHA256SUMS)
+          ls -l out
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" out/* --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes --prerelease

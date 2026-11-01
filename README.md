@@ -1,5 +1,7 @@
 # Pi Command Runner for Flipper Zero + Raspberry Pi backpack
 
+[![CI](https://github.com/yakovkhalinsky/flipper-backpack/actions/workflows/ci.yml/badge.svg)](https://github.com/yakovkhalinsky/flipper-backpack/actions/workflows/ci.yml) [![Release](https://github.com/yakovkhalinsky/flipper-backpack/actions/workflows/release.yml/badge.svg)](https://github.com/yakovkhalinsky/flipper-backpack/actions/workflows/release.yml)
+
 Run a registry of allowlisted tools on the Pi Zero 2W in the Elecrow/Binary-6 backpack and
 see the results on the Flipper as menus, key/value lists, tables, status popups and progress
 bars. Wired over the Flipper's USART: **pin 13 = TX, pin 14 = RX** ⇄ Pi `/dev/serial0`,
