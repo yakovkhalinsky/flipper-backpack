@@ -1,0 +1,2 @@
+{"schema": 1, "id": "disk", "label": "Disk usage", "description": "Mounted filesystems (df)",
+ "timeout": 10, "output": "table"}

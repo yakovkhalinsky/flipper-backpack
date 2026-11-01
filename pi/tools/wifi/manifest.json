@@ -1,0 +1,2 @@
+{"schema": 1, "id": "wifi", "label": "Wi-Fi", "description": "SSID, signal and address on wlan0",
+ "timeout": 10, "output": "kv"}

@@ -1,0 +1,11 @@
+#!/usr/bin/python3
+import subprocess
+from flipper_tool import table, emit, status
+
+try:
+    out = subprocess.run(["df", "-h", "-x", "tmpfs", "-x", "devtmpfs", "--output=target,size,avail,pcent"],
+                         capture_output=True, text=True, timeout=5).stdout
+except (OSError, subprocess.TimeoutExpired):
+    emit(status("error", "df failed")); raise SystemExit(1)
+rows = [l.split() for l in out.splitlines()[1:] if len(l.split()) == 4]
+emit(table(["Mount", "Size", "Free", "Use"], rows[:16], title="Disk"))

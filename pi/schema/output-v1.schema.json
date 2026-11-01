@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://0d3sa.local/flipper-runner/output-v1.schema.json",
+  "title": "flipper-runner tool output, schema v1",
+  "type": "object",
+  "required": ["schema", "type", "data"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": 1},
+    "type": {"enum": ["text", "kv", "table", "status", "progress", "list"]},
+    "title": {"type": "string", "maxLength": 32},
+    "data": true
+  },
+  "allOf": [
+    {"if": {"properties": {"type": {"const": "text"}}},
+     "then": {"properties": {"data": {"type": "array", "maxItems": 64,
+       "items": {"type": "string", "maxLength": 64}}}}},
+    {"if": {"properties": {"type": {"const": "kv"}}},
+     "then": {"properties": {"data": {"type": "array", "maxItems": 16,
+       "items": {"type": "array", "minItems": 2, "maxItems": 2,
+         "prefixItems": [{"type": "string", "maxLength": 20}, {"type": "string", "maxLength": 40}]}}}}},
+    {"if": {"properties": {"type": {"const": "table"}}},
+     "then": {"properties": {"data": {"type": "object", "required": ["columns", "rows"],
+       "additionalProperties": false,
+       "properties": {
+         "columns": {"type": "array", "minItems": 1, "maxItems": 4, "items": {"type": "string", "maxLength": 16}},
+         "rows": {"type": "array", "maxItems": 16,
+           "items": {"type": "array", "maxItems": 4, "items": {"type": "string", "maxLength": 16}}}}}}},
+     "$comment": "Each row must have exactly as many cells as columns (checked by the service)."},
+    {"if": {"properties": {"type": {"const": "status"}}},
+     "then": {"properties": {"data": {"type": "object", "required": ["level", "message"],
+       "additionalProperties": false,
+       "properties": {"level": {"enum": ["ok", "warn", "error"]},
+                      "message": {"type": "string", "maxLength": 96}}}}}},
+    {"if": {"properties": {"type": {"const": "progress"}}},
+     "then": {"properties": {"data": {"type": "object", "required": ["pct", "label"],
+       "additionalProperties": false,
+       "properties": {"pct": {"type": "integer", "minimum": 0, "maximum": 100},
+                      "label": {"type": "string", "maxLength": 32}}}}}},
+    {"if": {"properties": {"type": {"const": "list"}}},
+     "then": {"properties": {"data": {"type": "array", "maxItems": 20,
+       "items": {"type": "object", "required": ["label"], "additionalProperties": false,
+         "properties": {
+           "label": {"type": "string", "maxLength": 32},
+           "tool": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_-]{0,23}$"},
+           "params": {"type": "object", "maxProperties": 1,
+             "propertyNames": {"pattern": "^[a-z][a-z0-9_]{0,11}$"},
+             "additionalProperties": {"type": ["string", "integer"], "pattern": "^[A-Za-z0-9_.@-]{1,24}$"}}},
+         "dependentRequired": {"params": ["tool"]}}}}}}
+  ]
+}

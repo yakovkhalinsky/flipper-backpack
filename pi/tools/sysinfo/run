@@ -1,0 +1,20 @@
+#!/usr/bin/python3
+import socket, subprocess
+from flipper_tool import kv, emit
+
+def sh(*argv):
+    try:
+        return subprocess.run(argv, capture_output=True, text=True, timeout=4).stdout.strip()
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+ips = sh("hostname", "-I").split()
+up = sh("uptime", "-p").replace("up ", "")
+temp = sh("vcgencmd", "measure_temp").replace("temp=", "")
+if not temp:
+    try:
+        temp = "%.1f'C" % (int(open("/sys/class/thermal/thermal_zone0/temp").read()) / 1000)
+    except (OSError, ValueError):
+        temp = "n/a"
+emit(kv([("Host", socket.gethostname()), ("IP", ips[0] if ips else "none"),
+         ("Uptime", up or "n/a"), ("CPU temp", temp)], title="System"))

@@ -1,0 +1,11 @@
+#!/usr/bin/python3
+# Needs the sudoers drop-in: exactly "/usr/bin/systemctl reboot" for flipper-runner.
+import subprocess
+from flipper_tool import status, emit
+
+try:
+    r = subprocess.run(["sudo", "-n", "/usr/bin/systemctl", "reboot"], capture_output=True, timeout=10)
+    ok = r.returncode == 0
+except (OSError, subprocess.TimeoutExpired):
+    ok = False
+emit(status("ok" if ok else "error", "Reboot requested" if ok else "sudo refused; check install", title="reboot"))

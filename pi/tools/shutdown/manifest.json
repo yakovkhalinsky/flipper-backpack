@@ -1,0 +1,2 @@
+{"schema": 1, "id": "shutdown", "label": "Shut down Pi", "description": "Power off the Raspberry Pi now",
+ "timeout": 15, "confirm": true, "output": "status"}

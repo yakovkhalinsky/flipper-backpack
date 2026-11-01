@@ -1,0 +1,22 @@
+#!/usr/bin/python3
+import subprocess
+from flipper_tool import kv, emit
+
+def sh(*argv):
+    try:
+        return subprocess.run(argv, capture_output=True, text=True, timeout=4).stdout.strip()
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+
+ssid = sh("iwgetid", "-r") or "not connected"
+sig = "n/a"
+for line in sh("iw", "dev", "wlan0", "link").splitlines():
+    line = line.strip()
+    if line.startswith("signal:"):
+        sig = line.split(":", 1)[1].strip()
+addr = "none"
+for line in sh("ip", "-brief", "-4", "addr", "show", "wlan0").splitlines():
+    parts = line.split()
+    if len(parts) >= 3:
+        addr = parts[2]
+emit(kv([("SSID", ssid), ("Signal", sig), ("Address", addr)], title="Wi-Fi"))

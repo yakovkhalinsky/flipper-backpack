@@ -1,0 +1,13 @@
+App(
+    appid="pi_command_runner",
+    name="Pi Command Runner",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="pi_runner_app",
+    requires=["gui"],
+    stack_size=4 * 1024,
+    fap_category="GPIO",
+    fap_icon="icon.png",
+    fap_version="1.0",
+    fap_author="Yakov Khalinsky",
+    fap_description="Run allowlisted tools on a Raspberry Pi backpack over UART (pins 13/14)",
+)

@@ -1,0 +1,2 @@
+{"schema": 1, "id": "sysinfo", "label": "System info", "description": "Host, IP, uptime and CPU temperature",
+ "timeout": 10, "output": "kv"}

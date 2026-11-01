@@ -1,0 +1,13 @@
+#!/usr/bin/python3
+# DISABLED EXAMPLE. Not installed by install.sh. To enable, edit REPO, then:
+#   sudo install -d -o root -g root -m 755 /opt/flipper-runner/tools/git-pull
+#   sudo install -o root -g root -m 755 run manifest.json /opt/flipper-runner/tools/git-pull/
+# The repo must be readable/writable by the flipper-runner user.
+import subprocess
+from flipper_tool import text, emit, progress
+
+REPO = "/home/pi/CHANGE-ME"
+progress(10, "git pull --ff-only")
+r = subprocess.run(["git", "-C", REPO, "pull", "--ff-only"], capture_output=True, text=True, timeout=55)
+lines = (r.stdout + r.stderr).splitlines()[-20:] or ["(no output)"]
+emit(text(lines + [f"exit {r.returncode}"], title="git pull"))

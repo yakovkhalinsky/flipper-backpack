@@ -1,0 +1,4 @@
+{"schema": 1, "id": "service-status", "label": "Service status", "description": "systemctl state of one service",
+ "timeout": 10, "output": "status",
+ "params": [{"name": "svc", "type": "enum", "label": "Service",
+             "values": ["ssh", "cron", "flipper-runner", "avahi-daemon", "NetworkManager", "bluetooth"]}]}

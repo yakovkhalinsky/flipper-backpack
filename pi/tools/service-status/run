@@ -1,0 +1,13 @@
+#!/usr/bin/python3
+import subprocess
+from flipper_tool import status, emit, params
+
+svc = params()["svc"]  # enum-validated by the service before we are started
+try:
+    r = subprocess.run(["systemctl", "show", "-p", "ActiveState,SubState", "--value", svc + ".service"],
+                       capture_output=True, text=True, timeout=5)
+    active, sub = (r.stdout.split() + ["unknown", "unknown"])[:2]
+except (OSError, subprocess.TimeoutExpired):
+    active, sub = "unknown", "unknown"
+level = {"active": "ok", "inactive": "warn", "failed": "error"}.get(active, "warn")
+emit(status(level, f"{svc}: {active} ({sub})", title="Service"))

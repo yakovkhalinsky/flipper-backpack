@@ -1,0 +1,2 @@
+{"schema": 1, "id": "services", "label": "Services", "description": "Pick a service to inspect",
+ "timeout": 10, "output": "list"}

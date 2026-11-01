@@ -1,0 +1,6 @@
+#!/usr/bin/python3
+# Chains into service-status; values must match that tool's enum.
+from flipper_tool import list_, item, emit
+
+SERVICES = ["ssh", "cron", "flipper-runner", "avahi-daemon", "NetworkManager", "bluetooth"]
+emit(list_([item(s, "service-status", svc=s) for s in SERVICES], title="Services"))

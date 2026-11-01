@@ -1,0 +1,2 @@
+{"schema": 1, "id": "git-pull", "label": "Git pull", "description": "Disabled example: fast-forward a placeholder repo",
+ "timeout": 60, "confirm": true, "output": "text"}
