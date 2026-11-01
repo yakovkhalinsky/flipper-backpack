@@ -1,3 +1,5 @@
 # /etc/sudoers.d/flipper-runner — installed by install.sh, checked with visudo -c.
 # Exact commands with exact arguments only; no wildcards, no shell.
 flipper-runner ALL=(root) NOPASSWD: /usr/bin/systemctl reboot, /usr/bin/systemctl poweroff
+# Kismet (optional): start/stop the one unit, nothing else.
+flipper-runner ALL=(root) NOPASSWD: /usr/bin/systemctl start kismet.service, /usr/bin/systemctl stop kismet.service

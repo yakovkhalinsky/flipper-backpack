@@ -1,0 +1,2 @@
+{"schema": 1, "id": "kismet-start", "label": "Kismet start", "description": "Start passive Kismet capture (kismet.service)",
+ "timeout": 45, "confirm": true, "output": "status"}

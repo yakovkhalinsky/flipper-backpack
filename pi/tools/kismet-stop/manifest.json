@@ -1,0 +1,2 @@
+{"schema": 1, "id": "kismet-stop", "label": "Kismet stop", "description": "Stop Kismet (kismet.service)",
+ "timeout": 45, "confirm": true, "output": "status"}

@@ -1,0 +1,5 @@
+#!/usr/bin/python3
+from flipper_tool import emit, params
+import kismet_tools
+p = params()  # idx is a bounded int into the cache written by kismet-devices
+emit(kismet_tools.device_doc(int(p.get("idx", "0")), p.get("mac", "masked")))

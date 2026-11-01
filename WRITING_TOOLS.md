@@ -34,6 +34,14 @@ Tools with an invalid manifest are skipped and logged. In production every file 
 directory must be **root-owned and not group/world-writable**, otherwise the tool is skipped,
 so the service user can never rewrite what it runs.
 
+### Selecting something that isn't an enum (e.g. a device)
+Schema v1 has no free-form string params, on purpose. To drill into items whose ids aren't
+known in advance, have the list tool cache the real ids in `/run/flipper-runner/` (a 0700
+tmpfs dir owned by the service; write files 0600 with `O_NOFOLLOW`, include a timestamp) and
+chain each item with a bounded int index. The detail tool reads the cache, rejects stale
+entries, and re-validates the id with a strict `\A...\Z` regex before using it.
+See `kismet_tools.py` (`kismet-devices` → `kismet-device`).
+
 ## Output: schema v1
 Print **one JSON document** to stdout (`schema/output-v1.schema.json`):
 

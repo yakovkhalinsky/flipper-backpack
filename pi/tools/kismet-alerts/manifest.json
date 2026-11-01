@@ -1,0 +1,2 @@
+{"schema": 1, "id": "kismet-alerts", "label": "Kismet alerts", "description": "Recent Kismet alerts",
+ "timeout": 15, "output": "text"}

@@ -10,9 +10,9 @@ import re
 SCHEMA_VERSION = 1
 MAX_FRAME = 256  # bytes per line on the wire, incl. newline
 
-ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,23}$")
-PNAME_RE = re.compile(r"^[a-z][a-z0-9_]{0,11}$")
-PVAL_RE = re.compile(r"^[A-Za-z0-9_.@-]{1,24}$")
+ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,23}\Z")
+PNAME_RE = re.compile(r"^[a-z][a-z0-9_]{0,11}\Z")
+PVAL_RE = re.compile(r"^[A-Za-z0-9_.@-]{1,24}\Z")
 
 CAPS = {
     "title": 32,

@@ -1,0 +1,5 @@
+#!/usr/bin/python3
+from flipper_tool import emit, params
+import kismet_tools
+p = params()  # already validated by the service against the manifest
+emit(kismet_tools.devices_doc(p.get("sort", "last_seen"), int(p.get("limit", "10"))))

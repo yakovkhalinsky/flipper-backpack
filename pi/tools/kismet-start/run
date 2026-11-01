@@ -1,0 +1,10 @@
+#!/usr/bin/python3
+# Exact command allowed by /etc/sudoers.d/flipper-runner (no wildcards).
+import subprocess
+from flipper_tool import emit, status
+r = subprocess.run(["sudo", "-n", "/usr/bin/systemctl", "start", "kismet.service"],
+                   capture_output=True, text=True, timeout=40)
+if r.returncode == 0:
+    emit(status("ok", "Kismet started", title="Kismet"))
+else:
+    emit(status("error", "systemctl start failed (rc %d); see journalctl -u kismet" % r.returncode, title="Kismet"))

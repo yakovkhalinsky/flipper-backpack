@@ -14,7 +14,7 @@ Environment=PYTHONPATH=/opt/flipper-runner PYTHONUNBUFFERED=1
 Restart=always
 RestartSec=3
 # Hardening. NoNewPrivileges is deliberately NOT set: the reboot/shutdown tools
-# need sudo (setuid), limited by /etc/sudoers.d/flipper-runner to two exact commands.
+# need sudo (setuid), limited by /etc/sudoers.d/flipper-runner to exact commands.
 ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
@@ -26,6 +26,9 @@ LockPersonality=yes
 # sudo needs its timestamp/lecture dirs; "-" ignores missing paths.
 ReadWritePaths=-/run/sudo -/var/lib/sudo
 UMask=0077
+# Short-lived Kismet device-list cache (/run/flipper-runner).
+RuntimeDirectory=flipper-runner
+RuntimeDirectoryMode=0700
 
 [Install]
 WantedBy=multi-user.target

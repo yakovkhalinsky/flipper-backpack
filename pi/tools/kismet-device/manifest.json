@@ -1,0 +1,4 @@
+{"schema": 1, "id": "kismet-device", "label": "Kismet device", "description": "Detail for a device picked from Kismet devices",
+ "timeout": 15, "output": "kv",
+ "params": [{"name": "idx", "type": "int", "label": "Index", "min": 0, "max": 19, "default": 0},
+            {"name": "mac", "type": "enum", "label": "MAC", "values": ["masked", "full"], "default": "masked"}]}

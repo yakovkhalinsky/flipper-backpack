@@ -1,0 +1,29 @@
+# /etc/systemd/system/kismet.service — installed by install-kismet.sh.
+# Started/stopped on demand from the Flipper (not enabled at boot).
+# Runs as an unprivileged user; capture helpers are the package's suid-root
+# binaries, restricted to members of the "kismet" group.
+[Unit]
+Description=Kismet (passive wireless monitor, loopback-only API)
+After=network.target
+
+[Service]
+Type=simple
+User=kismetd
+Group=kismetd
+SupplementaryGroups=kismet
+WorkingDirectory=/var/lib/kismetd
+Environment=HOME=/var/lib/kismetd
+ExecStart=/usr/bin/kismet --no-ncurses
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+# Keep the Zero 2W usable even if Kismet balloons.
+MemoryHigh=280M
+MemoryMax=340M
+Nice=5
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/log/kismet /var/lib/kismetd
+
+[Install]
+WantedBy=multi-user.target

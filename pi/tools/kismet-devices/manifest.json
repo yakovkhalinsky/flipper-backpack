@@ -1,0 +1,4 @@
+{"schema": 1, "id": "kismet-devices", "label": "Kismet devices", "description": "Top devices seen in the last hour",
+ "timeout": 20, "output": "list",
+ "params": [{"name": "sort", "type": "enum", "label": "Sort", "values": ["last_seen", "signal"], "default": "last_seen"},
+            {"name": "limit", "type": "int", "label": "Limit", "min": 1, "max": 20, "default": 10}]}

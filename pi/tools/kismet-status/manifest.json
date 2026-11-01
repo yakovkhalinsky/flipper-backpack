@@ -1,0 +1,2 @@
+{"schema": 1, "id": "kismet-status", "label": "Kismet status", "description": "State, sources, packet rate, devices, log size",
+ "timeout": 15, "output": "kv"}

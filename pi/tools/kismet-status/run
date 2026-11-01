@@ -1,0 +1,4 @@
+#!/usr/bin/python3
+from flipper_tool import emit
+import kismet_tools
+emit(kismet_tools.status_doc())

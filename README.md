@@ -13,7 +13,11 @@ pi/                       Pi service, tools, installer, tests
   flipper_runner/         service (protocol, registry, schema)
   flipper_tool.py         helper for tool authors
   schema/output-v1.schema.json
-  tools/                  sysinfo, wifi, disk, services, service-status, reboot, shutdown
+  tools/                  sysinfo, wifi, disk, services, service-status, reboot, shutdown,
+                          kismet-{start,stop,status,devices,device,alerts}
+  kismet_client.py        read-only Kismet REST client (localhost only)
+  kismet/                 sample kismet_site.conf + kismet.service
+  install-kismet.sh       optional Kismet installer
   examples/git-pull/      disabled example
 PROTOCOL.md  WRITING_TOOLS.md  HARDWARE_TEST.md
 dist/pi_command_runner.fap   prebuilt (SDK release 1.5.1, API 88.2)
@@ -53,11 +57,12 @@ Details: [PROTOCOL.md](PROTOCOL.md). Adding tools: [WRITING_TOOLS.md](WRITING_TO
 * Frames over 256 bytes or with non-printables are rejected; ids/values are regex-checked.
 * `confirm` tools need `@confirm` on the wire as well as the dialog on the Flipper.
 * systemd hardening: `ProtectSystem=strict`, `ProtectHome`, `PrivateTmp`, etc.
-  `NoNewPrivileges` is intentionally off so sudo works for the two power actions.
+  `NoNewPrivileges` is intentionally off so sudo works for the power and Kismet start/stop actions.
 
 ### sudoers (installed as `/etc/sudoers.d/flipper-runner`, validated with `visudo -c`)
 ```
 flipper-runner ALL=(root) NOPASSWD: /usr/bin/systemctl reboot, /usr/bin/systemctl poweroff
+flipper-runner ALL=(root) NOPASSWD: /usr/bin/systemctl start kismet.service, /usr/bin/systemctl stop kismet.service
 ```
 Exact commands with exact arguments; nothing else is allowed. Remove the line to disable
 remote power control.
@@ -83,6 +88,47 @@ installed tool — keep the registry to things you're happy for the Flipper to t
   and cancel phases Back is ignored (each phase times out in ≤4.5 s). Tool runs use a
   custom "running…" screen instead so Back can cancel.
 * Power: the backpack powers the Pi from the Flipper/USB; heavy tools can brown out on battery.
+
+## Kismet (optional, passive monitoring)
+
+> **Legal:** only monitor networks and devices you own or have explicit permission to monitor.
+> These tools are **passive only**: no deauth, injection or other active features, and no
+> Kismet active/attack plugins are installed or enabled.
+
+| Tool | Output | What it does |
+|---|---|---|
+| Kismet start / stop | status (confirm) | `sudo systemctl start/stop kismet.service` (exact sudoers lines) |
+| Kismet status | kv | service state, uptime, data sources + state, packets/s, device count, log size, free disk |
+| Kismet devices | list | top N (`limit` 1–20) devices seen in the last hour, `sort` = `last_seen` or `signal`; each chains to Kismet device |
+| Kismet device | kv | type, name/SSID, MAC (`mac` = `masked` (default, OUI only) or `full`), channel, signal, manufacturer, first/last seen, packets |
+| Kismet alerts | text | most recent Kismet alerts |
+
+**Hardware:** the Zero 2W's onboard Wi-Fi (brcmfmac) **does not support monitor mode** on stock
+firmware. Use a USB Wi-Fi adapter that does (e.g. MT7601U/MT7612U/RT5370/AR9271-based) on the
+micro-USB **OTG** port (an OTG adapter or powered hub). Nexmon can patch the onboard chip but is
+unsupported here. Kismet is heavy for 512 MB RAM: the shipped `pi/kismet/kismet_site.conf`
+keeps logging to the `kismet` DB only with short packet/device timeouts, ages devices out after
+15 min, caps tracked devices and disables RRDs/history; the unit caps memory at 340 MB.
+
+**Install:** after `install.sh`, run `sudo ./install-kismet.sh` (64-bit Raspberry Pi OS bookworm).
+It adds the official Kismet apt repo with its key dearmored into
+`/usr/share/keyrings/kismet-archive-keyring.gpg` (`signed-by=`), installs only `kismet-core` and
+`kismet-capture-linux-wifi`, creates a `kismetd` user, installs the site conf and
+`kismet.service` (not enabled at boot), and creates a **read-only role** API key in
+`/etc/flipper-runner/kismet.env` (mode 0600, owned by `flipper-runner`; never printed or committed).
+Then set your adapter in `source=` in `/etc/kismet/kismet_site.conf`.
+
+**Security:** Kismet's httpd is bound to `127.0.0.1:2501` (`httpd_bind_address`) so the web UI
+isn't on Wi-Fi; use `ssh -L 2501:127.0.0.1:2501 pi@<pi>` to reach it. The tools only talk to
+`127.0.0.1:2501`, cap responses at 512 KB, and fall back to a status error view if Kismet is
+down, unreachable or rejects the key.
+
+**Device selection (why an index, not a key param):** the Flipper never sends a Kismet device key.
+`Kismet devices` writes the keys it listed to `/run/flipper-runner/kismet-devices.json`
+(0600, tmpfs, expires after 5 min) and each item chains with a bounded int `idx` (0–19).
+`Kismet device` looks the key up there and re-validates it against `^[A-F0-9_:]{1,40}$`
+before building the URL. This keeps schema v1 unchanged (still enum/int only) so no free-form
+string ever crosses the UART or reaches a URL from the Flipper side.
 
 ## Uninstall
 `sudo ./uninstall.sh` on the Pi (leaves the UART enabled), and delete the .fap.
